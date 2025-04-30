@@ -57,7 +57,7 @@
     
     <!-- Main CSS -->
     {{ $css := resources.Get "css/main.css" }}
-    {{ $css = $css | css.PostCSS }}
+    {{ $css = $css | resources.PostCSS }}
     {{ if hugo.IsProduction }}
         {{ $css = $css | minify | fingerprint | resources.PostProcess }}
     {{ end }}
