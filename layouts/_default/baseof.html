@@ -13,7 +13,22 @@
     <!-- Meta Tags -->
     <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}">
     <meta name="author" content="{{ .Site.Params.author | default .Site.Title }}">
+    <meta name="keywords" content="{{ with .Params.keywords }}{{ delimit . ", " }}{{ else }}AMClock, 时钟应用, iOS应用, 极简主义, 艺术时钟, 时间管理{{ end }}">
     <meta name="robots" content="{{ with .Params.robots }}{{ . }}{{ else }}index, follow{{ end }}">
+    
+    <!-- 搜索引擎验证 -->
+    {{ with .Site.Params.seo.googleSiteVerification }}
+    <meta name="google-site-verification" content="{{ . }}">
+    {{ end }}
+    {{ with .Site.Params.seo.bingSiteVerification }}
+    <meta name="msvalidate.01" content="{{ . }}">
+    {{ end }}
+    
+    <!-- 多语言 SEO 标签 -->
+    {{ range .Site.Languages }}
+    <link rel="alternate" hreflang="{{ .Lang }}" href="{{ . | relURL }}">
+    {{ end }}
+    <link rel="alternate" hreflang="x-default" href="{{ .Site.Language | relURL }}">
     
     <!-- Open Graph -->
     <meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}">
@@ -21,11 +36,16 @@
     <meta property="og:type" content="{{ if .IsHome }}website{{ else }}article{{ end }}">
     <meta property="og:url" content="{{ .Permalink }}">
     <meta property="og:site_name" content="{{ .Site.Title }}">
+    <meta property="og:locale" content="{{ .Site.Language.Lang }}">
     {{ with .Params.image }}
     <meta property="og:image" content="{{ . | absURL }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     {{ else }}
     {{ with .Site.Params.image }}
     <meta property="og:image" content="{{ . | absURL }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     {{ end }}
     {{ end }}
     
@@ -33,8 +53,8 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}">
     <meta name="twitter:description" content="{{ with .Description }}{{ . }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}">
-    {{ with .Site.Params.twitter }}
-    <meta name="twitter:site" content="@{{ . }}">
+    {{ with .Site.Params.social.twitter }}
+    <meta name="twitter:site" content="{{ . }}">
     {{ end }}
     {{ with .Params.image }}
     <meta name="twitter:image" content="{{ . | absURL }}">
@@ -44,8 +64,11 @@
     {{ end }}
     {{ end }}
     
-    <!-- Favicon -->
+    <!-- 图标 -->
     <link rel="icon" type="image/x-icon" href="{{ "images/favicon.ico" | relURL }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ "images/apple-touch-icon.png" | relURL }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ "images/favicon-32x32.png" | relURL }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ "images/favicon-16x16.png" | relURL }}">
     
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ .Permalink }}">
@@ -62,6 +85,44 @@
         {{ $css = $css | minify | fingerprint | resources.PostProcess }}
     {{ end }}
     <link rel="stylesheet" href="{{ $css.RelPermalink }}">
+
+    <!-- 结构化数据 -->
+    {{ if .IsHome }}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "{{ .Site.Title }}",
+        "url": "{{ .Site.BaseURL }}",
+        "description": "{{ .Site.Params.description }}",
+        "author": {
+            "@type": "Person",
+            "name": "{{ .Site.Params.author }}"
+        },
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "{{ .Site.BaseURL }}search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+    {{ else }}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "{{ .Title }}",
+        "description": "{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}",
+        "url": "{{ .Permalink }}",
+        "datePublished": "{{ .Date.Format "2006-01-02T15:04:05-07:00" }}",
+        "dateModified": "{{ .Lastmod.Format "2006-01-02T15:04:05-07:00" }}",
+        "author": {
+            "@type": "Person",
+            "name": "{{ .Site.Params.author }}"
+        }
+    }
+    </script>
+    {{ end }}
 
     <!-- Additional Meta Tags from Front Matter -->
     {{ with .Params.customMeta }}
